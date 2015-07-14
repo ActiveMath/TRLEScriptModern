@@ -55,7 +55,7 @@ The supported gameflow chunks are: *PSXExtensions*, *PCExtensions*, *Language*, 
 * `LoadSave= DISABLED/ENABLED`
 * `Title=  DISABLED/ENABLED`
 * `PlayAnyLevel= DISABLED/ENABLED`
-* `InputTimeout= DISABLED/ENABLED`
+* `InputTimeout= an integer`
 * `FlyCheat= DISABLED/ENABLED`
 * `Security= an integer` - this is unused
 * `DemoDisc= DISABLED/ENABLED`

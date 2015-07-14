@@ -46,7 +46,7 @@ namespace TRLEScript
 		static const int loadCameraOpcode = 0x91;
 		static const int layer1Opcode = 0x89;
 		static const int layer2Opcode = 0x8a;
-		static const uint8_t mirrorOpcode = 0x8e;
+		static const int mirrorOpcode = 0x8e;
 
 		static const int key1Opcode = 0x93;
 		static const int key2Opcode = 0x94;

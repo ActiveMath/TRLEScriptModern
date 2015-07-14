@@ -33,7 +33,6 @@ E.g. If the string *Task: Pick up the small medipack* must be used a legend stri
 
 ## New features
 * Batch processing. The user can now provide multiple input files for the tool to compile to corresponding output script files.
-* Coming soon... #include support, #define support
 
 ## Syntax
 The syntax used for TRLE scripts is fairly simple. The compiler is *not* case-sensitive, except of course for the user-defined language strings which must be written exactly as they appear in the corresponding primary language script file (the one with the index 0 in the Language chunk).

@@ -8,6 +8,7 @@
 #include <forward_list>
 #include <stack>
 #include <unordered_set>
+#include <vector>
 //#include <utility>
 
 namespace TRLEScript
@@ -17,6 +18,7 @@ namespace TRLEScript
 
 	enum class ParseMode
 	{
+		Undefined,
 		PSXExtensions,
 		PCExtensions,
 		Language,
@@ -25,8 +27,14 @@ namespace TRLEScript
 		Level,
 		Strings,
 		PSXStrings,
-		PCStrings,
-		Undefined
+		PCStrings
+	};
+
+	enum class MacroType
+	{
+		None,
+		Include,
+		Define
 	};
 
 	struct PlatformDefinitions
@@ -363,6 +371,7 @@ namespace TRLEScript
 		LanguageScript *primaryLanguage = nullptr;
 
 		virtual GameflowScriptHeader* SourceParse(const char *data);
+		virtual char *PreprocessorPass(const char *data);
 		bool isLanguageScript;
 		bool isGameflowScript;
 		bool compilingToDAT;
@@ -377,6 +386,7 @@ namespace TRLEScript
 		std::stack<char *> *ParseArguments(char *token);
 
 		char *StripTrailingWhitespace(const char *string);
+		char *StripTrailingChar(const char *string, char c);
 		char *ParseLanguageString(const char *token);
 		char *ParseString(const char *token);
 		long int ParseNumber(const char *token);
@@ -384,7 +394,7 @@ namespace TRLEScript
 		void DefaultTitle(TitleLevelData *title);
 		void DefaultLevel(LevelData *level);
 
-
+		std::vector<char> preprocessedData;
 
 		char *command = nullptr;
 		char *wholeLine = nullptr;	//new 13-7-15

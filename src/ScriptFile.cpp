@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <cctype>
 #include <stack>
-//#include<iostream>
+#include<iostream>
 
 using namespace TRLEScript;
 
@@ -107,6 +107,29 @@ ScriptFile::ScriptFile(const char *filename)
 		ptrdiff_t newLength = endPos - startPos + 1;
 		//int newLength = endPos - startPos + 1;	//new 11-7-15
         char *out = new char[newLength + 1];    //new 10-7-15
+
+		out = strncpy(out, startPos, newLength);
+		out[newLength] = '\0';
+		return out;
+	}
+
+	char *ScriptFile::StripTrailingChar(const char *string, char c)
+	{
+		const char *ptr = string;
+		const char *startPos;
+		const char *endPos;
+		int length = strlen(string);
+		startPos = ptr;
+		endPos = ptr + length - 1;
+
+		while (*startPos == c)
+			++startPos;
+
+		while (*endPos == c)
+			endPos--;
+
+		ptrdiff_t newLength = endPos - startPos + 1;
+		char *out = new char[newLength + 1];
 
 		out = strncpy(out, startPos, newLength);
 		out[newLength] = '\0';
@@ -938,7 +961,94 @@ ScriptFile::ScriptFile(const char *filename)
 		AddNewMessage(MessageTypes::Error, text);
 	}
 
-	GameflowScriptHeader *ScriptFile::SourceParse(const char *data)
+	char *ScriptFile::PreprocessorPass(const char *data)
+	{
+		const char *lastPos = data;
+		while (lastPos != nullptr)
+		{
+			const char *hashPos;
+
+			hashPos = strstr(lastPos, "#include ");
+			if (hashPos != nullptr)
+			{
+				while (lastPos != hashPos)
+				{
+					preprocessedData.push_back(*lastPos);
+					++lastPos;
+				}
+
+				int restLength = data + strlen(data) - hashPos;
+				//int restLength = strcspn(hashPos, "\n;");
+				char *restData = new char[restLength + 1];
+				strncpy(restData, hashPos, restLength);
+				restData[restLength] = '\0';
+				char *filename = strtok(restData, " \n;");
+				filename = strtok(nullptr, " \n;");
+				if (filename == nullptr)
+				{
+					delete[] restData;
+					lastPos += 9;
+				}
+
+				else
+				{
+					std::cout << filename << std::endl;
+					int macroLength = filename + strlen(filename) - restData;
+					std::cout << "macrolen:" << macroLength << std::endl;
+					system("pause");
+					char *realFilename = StripTrailingChar(filename, '\"');
+					delete[] restData;
+
+					std::fstream includeFile(realFilename);
+					if (includeFile)
+					{
+						includeFile.seekg(0, includeFile.end);
+						int includeFileSize = includeFile.tellg();
+						includeFile.seekg(0, includeFile.beg);
+
+						char *buffer = new char[includeFileSize];
+						includeFile.read(buffer, includeFileSize);
+						int actualSize = includeFile.gcount();
+						buffer[actualSize] = '\0';
+
+						for (int i = 0; i < actualSize; ++i)
+						{
+							preprocessedData.push_back(buffer[i]);
+						}
+
+						includeFile.close();
+						delete[] realFilename;
+						delete[] buffer;
+						//delete[] restData;
+						lastPos = hashPos + macroLength;
+					}
+
+					else
+					{
+						delete[] realFilename;
+						lastPos += 9;
+						//delete[] restData;
+					}
+				}
+			}
+
+			else
+			{
+				while (lastPos != data + strlen(data))
+				{
+					preprocessedData.push_back(*lastPos);
+					++lastPos;
+				}
+
+				preprocessedData.push_back('\0');
+				lastPos = nullptr;
+			}
+		}
+
+		return preprocessedData.data();
+	}
+
+	GameflowScriptHeader *ScriptFile::SourceParse(const char *rawData)
 	//GameflowScriptHeader *ScriptFile::SourceParse(const char *data, int length)
 	{
 		GameflowScriptHeader *gameflow = new GameflowScriptHeader;
@@ -952,15 +1062,11 @@ ScriptFile::ScriptFile(const char *filename)
 		gameflow->numLevelPaths = 0;
 		gameflow->title = nullptr;
 
+		char *data = PreprocessorPass(rawData);
+
 		const char *ptr = data;
 		bool isPrimaryLanguageParsed = false;
-		bool comment = false;
-		/*bool PSX = false;
-		bool PC = false;
-		bool language = false;
-		bool options = false;
-		bool title = false;
-		bool level = false;*/
+		bool isComment = false;
 
 		int numPSXExtensionChunks = 0;
 		int numPCExtensionChunks = 0;
@@ -972,29 +1078,48 @@ ScriptFile::ScriptFile(const char *filename)
 		ParseMode mode = ParseMode::Undefined;
 
         while (*ptr != '\0')
-        //while (ptr < data + length)
-		//while (ptr != data + length)
 		{
 			int lineLength = 0;
 			if (*ptr == ';')
 			{
-				comment = true;
+				isComment = true;
 				++ptr;
 			}
 
 			else if (isblank(*ptr) || *ptr == '\n')
 			{
 				if (*ptr == '\n')
-					comment = false;
+					isComment = false;
 				++ptr;
 			}
 
-			else if (comment == true)
+			else if (isComment == true)
 			{
 				++ptr;
 			}
 
-			else if (comment == false)
+			/*else if (*ptr == '#')
+			{
+				isMacro = true;
+				++ptr;
+			}
+
+			else if (isMacro == true)
+			{
+				size_t lineLength = strcspn(ptr, "\n;");
+				size_t macroLength = strcspn(ptr, "\" ");
+				char *macroString = new char[macroLength + 1];
+				strncpy(macroString, ptr, macroLength);
+				macroString[macroLength] = '\0';
+
+				if (strcmp(macroString, "include") == 0)
+					macroType = MacroType::Include;
+
+				else if (strcmp(macroString, "define") == 0)
+					macroType = MacroType::Define;
+			}*/
+
+			else if (isComment == false)
 			{
 
 				lineLength = strcspn(ptr, "\n;");//optimize with strtok only

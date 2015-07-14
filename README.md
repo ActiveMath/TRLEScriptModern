@@ -128,3 +128,6 @@ This tool can also be used to compile scripts for the game Tomb Raider: The Last
 
 ## Notes regarding compiling the source code of this program
 When compiling with the GNU GCC compiler, the following compiler option may have to be specified: `-U__STRICT_ANSI__`
+
+## Disclaimer
+This tool was not made and is not supported by Core Design Ltd, EIDOS Interactive and Square Enix.

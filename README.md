@@ -20,7 +20,7 @@ E.g. if the files *script_new.txt* and *script_old.txt* have to be compiled, the
 ```TRLEScriptModern script_new.txt script_old.txt```
 
 ### Using the drag-and-drop functionality
-In most modern operating systems, users can drag-and-drop files into a binary executable file of a certain program. This program uses this functionality so that when the user drags-and-drops input script files into the binary executable file of the program (usually **TRLEScriptModern**), they will be compiled sequentially in the same way as they would in the previous subsection.
+In most modern operating systems, users can drag-and-drop files into the binary executable file of a certain program. This program uses this functionality so that when the user drags-and-drops input script files into the binary executable file of the program (usually **TRLEScriptModern**), they will be compiled sequentially in the same way as they would in the previous subsection.
 
 ## Known bugs
 Unfortunately, this tools suffers from certain same issues as the one it inherits its funtionality from, the original script compiler. Some of them are also linked to the original *tomb4* binary, as it poses, with its hardcoded and non-open nature of code, various problems in how it interprets the compiled script files. On the other hand, this tool also managed to fix some of them, and those will be noted below. A subset of these bugs seems to be previously unaknowledged, so here is a complete listing of what I have been able to detect:

@@ -25,7 +25,7 @@ namespace TRLEScript
 			return nullptr;
 
 		std::string message = messages.front().text;
-		return message;		//work may not
+		return message;
 	}
 
 	std::stack<Message> Notifier::GetWarningStack() const
@@ -50,7 +50,7 @@ namespace TRLEScript
 			if (message.type == MessageTypes::Warning)
 			{
 				std::string warning = message.text;
-				return warning;			//may not
+				return warning;
 			}
 		}
 

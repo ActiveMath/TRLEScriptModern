@@ -58,7 +58,8 @@ using namespace TRLEScript;
 		return gameflowScript;
 	}
 
-	uint8_t Gameflow::GetNumUniqueLevelPaths() const
+	uint16_t Gameflow::GetNumUniqueLevelPaths() const
+	//	uint8_t Gameflow::GetNumUniqueLevelPaths() const
 	{
 		return gameflowScript->levelPathMap.size();
 	}
@@ -320,9 +321,12 @@ using namespace TRLEScript;
 		fwrite(&gameflow->options->InputTimeout, sizeof(uint32_t), 1, output);
 		fwrite(&gameflow->options->Security, sizeof(uint8_t), 1, output);
 
-		uint8_t tmp2 = GetNumUniqueLevelPaths();
-		fwrite(&tmp2, sizeof(uint8_t), 1, output);
-		fwrite(&gameflow->numTotalLevels, sizeof(uint16_t), 1, output);
+		uint16_t numUniqueLevelPaths = GetNumUniqueLevelPaths();
+		//uint8_t numUniqueLevelPaths = GetNumUniqueLevelPaths();
+		fwrite(&gameflow->numTotalLevels, sizeof(uint8_t), 1, output);
+		fwrite(&numUniqueLevelPaths, sizeof(uint16_t), 1, output);
+		//fwrite(&numUniqueLevelPaths, sizeof(uint8_t), 1, output);
+		//fwrite(&gameflow->numTotalLevels, sizeof(uint16_t), 1, output);
 
 		uint16_t levelPathStringLen = 0;
 		for (auto elem : gameflow->levelPathMap)

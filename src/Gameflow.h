@@ -32,7 +32,8 @@ namespace TRLEScript
 
 	private:
 		uint16_t GetPathStringOffset(int lastIndex);
-		uint8_t GetNumUniqueLevelPaths() const;
+		uint16_t GetNumUniqueLevelPaths() const;
+		//uint8_t GetNumUniqueLevelPaths() const;
 		int GetPathIndex(const char *path);// const;
 		bool created;
 

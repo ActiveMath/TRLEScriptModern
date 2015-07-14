@@ -1531,18 +1531,23 @@ ScriptFile::ScriptFile(const char *filename)
 
 									}
 
+									else
+									{
+										AddNewError("Could not open primary language file: " + std::string(langFilename));
+										return nullptr;
+									}
+
 									primaryLanguage->CompileToDAT(sourceDataLang);
 									//primaryLanguage->CompileToDAT(sourceDataLang, readChars);
 									delete[] sourceDataLang;
 								}
 
-								else
+								/*else
 								{
 									AddNewError("Unexpected error in reading " + std::string(langFilename));
 									return nullptr;
-								}
+								}*/
 
-								//todo: handle err
 								isPrimaryLanguageParsed = true;
 							}
 							break;
@@ -2258,7 +2263,7 @@ ScriptFile::ScriptFile(const char *filename)
 							if (!ArgumentsContainNumber(data, ptr))
 								return nullptr;
 
-							currentLevel->uv->speed = (uint8_t)ParseNumber(argStack->top());
+							currentLevel->uv->speed = (int8_t)ParseNumber(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 							//currentLevel->options.UVUsed = true;

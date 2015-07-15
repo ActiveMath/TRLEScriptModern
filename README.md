@@ -144,7 +144,7 @@ The supported language chunks are: *Strings*, *PSXStrings* and *PCStrings*.
 Every string written in a gameflow script file must also be present in the primary language script file (the one with the index 0 in the *Language* gameflow chunk), so that it can easily be translated into other language script files and so that the game engine can easily locate that translated string.
 
 ## 5. Miscalleneous
-This tool can also be used to compile scripts for the game Tomb Raider: The Last Revelation.
+This tool can also be used to compile scripts for the game *Tomb Raider: The Last Revelation*.
 
 ## 6. Notes regarding compiling the source code of this program
 When compiling with the GNU GCC compiler, the following compiler option may have to be specified: `-U__STRICT_ANSI__`

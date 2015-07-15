@@ -4,7 +4,7 @@ A modern (unofficial) edition of the Tomb Raider Level Editor Script Compiler
 ## Table of contents
 0. Basic information
 1. Usage
-  1. Using the terminal/command promp
+  1. Using the terminal/command prompt
   2. Using the drag-and-drop functionality
 2. Known bugs
 3. New features

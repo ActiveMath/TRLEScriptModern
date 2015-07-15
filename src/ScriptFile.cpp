@@ -2,6 +2,7 @@
 #include "ScriptFile.h"
 #include "StringHelper.h"
 #include <unordered_set>
+#include <unordered_map>
 #include <forward_list>
 #include <fstream>
 #include <cstdlib>
@@ -961,33 +962,63 @@ ScriptFile::ScriptFile(const char *filename)
 		AddNewMessage(MessageTypes::Error, text);
 	}
 
-	char *ScriptFile::PreprocessorPass(const char *data)
+	void ScriptFile::PreprocessorPass(const char *data)
 	{
+		/*std::vector<char> unprocessedData;
+		for (int i = 0; i < strlen(data); ++i)
+		{
+			unprocessedData.push_back(data[i]);
+		}*/
+
+		preprocessedData = PreprocessorDefinePass(PreprocessorIncludePass(data).data());
+		//unprocessedData.push_back('\0');
+		//preprocessedData = PreprocessorDefinePass(PreprocessorIncludePass(unprocessedData));
+		
+		//std::vector<char> includedData(std::move(PreprocessorIncludePass(unprocessedData)));
+		//preprocessedData = std::move(PreprocessorDefinePass(includedData));		need!
+
+		//return preprocessedData.data();
+	}
+
+	std::vector<char> ScriptFile::PreprocessorIncludePass(const char *data)	
+	//std::vector<char> ScriptFile::PreprocessorIncludePass(std::vector<char> vData)
+	{
+		//const char *data = vData.data();
+		std::vector<char> includeProcessedData;
+
 		const char *lastPos = data;
 		while (lastPos != nullptr)
 		{
 			const char *hashPos;
 
-			hashPos = strstr(lastPos, "#include ");
+			if (lastPos == data)
+				hashPos = strstr(lastPos, "#include ");
+
+			else
+				hashPos = strstr(lastPos + 1, "#include ");
+
 			if (hashPos != nullptr)
 			{
 				while (lastPos != hashPos)
 				{
-					preprocessedData.push_back(*lastPos);
+					includeProcessedData.push_back(*lastPos);
 					++lastPos;
 				}
+
+				if (StringHelper::PreviousLineCharsIncludeChar(hashPos, ';'))
+					continue;
 
 				int restLength = data + strlen(data) - hashPos;
 				//int restLength = strcspn(hashPos, "\n;");
 				char *restData = new char[restLength + 1];
 				strncpy(restData, hashPos, restLength);
 				restData[restLength] = '\0';
-				char *filename = strtok(restData, " \n;");
-				filename = strtok(nullptr, " \n;");
+				char *filename = strtok(restData, " \t\n;");
+				filename = strtok(nullptr, " \t\n;");
 				if (filename == nullptr)
 				{
 					delete[] restData;
-					lastPos += 9;
+					//lastPos += 9;
 				}
 
 				else
@@ -1013,21 +1044,21 @@ ScriptFile::ScriptFile(const char *filename)
 
 						for (int i = 0; i < actualSize; ++i)
 						{
-							preprocessedData.push_back(buffer[i]);
+							includeProcessedData.push_back(buffer[i]);
 						}
 
 						includeFile.close();
 						delete[] realFilename;
 						delete[] buffer;
-						//delete[] restData;
-						lastPos = hashPos + macroLength;
+						lastPos = hashPos + macroLength - 1;
+						std::cout << "last pos:" << *(lastPos-1) << std::endl;
 					}
 
 					else
 					{
+						AddNewWarning("Could not open '" + std::string(realFilename) + "' as part of an #include directive");
 						delete[] realFilename;
-						lastPos += 9;
-						//delete[] restData;
+						//lastPos += 9;;
 					}
 				}
 			}
@@ -1036,16 +1067,211 @@ ScriptFile::ScriptFile(const char *filename)
 			{
 				while (lastPos != data + strlen(data))
 				{
-					preprocessedData.push_back(*lastPos);
+					includeProcessedData.push_back(*lastPos);
 					++lastPos;
 				}
 
-				preprocessedData.push_back('\0');
+				includeProcessedData.push_back('\0');
 				lastPos = nullptr;
 			}
 		}
 
-		return preprocessedData.data();
+		return includeProcessedData;
+	}
+
+	int ScriptFile::MacroPointerCompare(const void *a, const void *b)
+	{
+		if (*(const char *)a == *(const char *)b)
+			return 0;
+
+		if (*(const char *)a > *(const char *)b)
+			return 1;
+
+		if (*(const char *)a < *(const char *)b)
+			return -1;
+	}
+
+	std::string ScriptFile::EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vMacro, std::string &toReplace)
+	{
+		std::string *toReturn;
+		for (auto macro : vMacro)
+		{
+			if (toReplace == macro.first)
+			{
+				return EvaluateMacro(vMacro, macro.second);
+			}
+		}
+		return toReplace;
+	}
+
+	void ScriptFile::MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos)
+	{
+		//const char **startPositions = new const char*[vMacro.size()];
+		////const char **startPositions = new char*[macroMap.size()];
+		//int i = 0;
+		//for (auto currentMacro : vMacro)
+		//	//for (auto currentMacro : macroMap)
+		//{
+		//	std::string currentTarget = currentMacro.first;
+
+		//	const char *startPos = strstr(lastPos, currentTarget.c_str());
+		//	startPositions[i] = startPos;
+		//	++i;
+		//	/*while (lastPos != startPos)
+		//	{
+		//	definedData.push_back(*lastPos);
+		//	}
+
+		//	for (size_t i = 0; i < currentMacro.second.size(); ++i)
+		//	{
+		//	definedData.push_back(currentMacro.second.c_str()[i]);
+		//	}
+
+		//	lastPos += currentMacro.second.size();
+		//	++i;*/
+		//}
+
+		while (lastPos != endPos)
+		{
+			bool needsPush = true;
+			for (int i = 0; i < vMacro.size(); ++i)
+			{
+				const char *replacementStartPos = strstr(lastPos, vMacro[i].first.c_str());
+				const char *initialPos = lastPos;
+				//while (replacementStartPos != nullptr&&replacementStartPos<endPos)
+				//{
+				if (strstr(lastPos, vMacro[i].first.c_str()) == lastPos)
+				{
+					std::string replaced = EvaluateMacro(vMacro, vMacro[i].first);
+					for (int j = 0; j < replaced.size(); ++j)
+					{
+						definedData.push_back(replaced[j]);
+						//definedData.push_back(vMacro[i].second.c_str()[j]);	works
+					}
+
+					lastPos += vMacro[i].first.size();
+					needsPush = false;
+					break;
+					//replacementStartPos = strstr(lastPos, vMacro[i].first.c_str());
+				}
+				//}
+			}
+
+			if (needsPush)
+			{
+				definedData.push_back(*lastPos);
+				++lastPos;
+			}
+		}
+	}
+
+	std::vector<char> ScriptFile::PreprocessorDefinePass(const char *data)
+	{
+		std::vector<char> definedData;
+
+		//std::unordered_map<std::string, std::string> macroMap;
+		std::vector < std::pair<std::string, std::string> > vMacro;
+		const char *lastPos = data;
+		while (lastPos != nullptr)
+		{
+			const char *hashPos;
+
+			if (lastPos == data)
+				hashPos = strstr(lastPos, "#define ");
+
+			else
+				hashPos = strstr(lastPos + 1, "#define ");		//7?
+
+			if (hashPos != nullptr)
+			{
+				//while (lastPos != hashPos)
+				//{
+				MacroSubstitute(vMacro, definedData, lastPos, hashPos);
+				if (StringHelper::PreviousLineCharsIncludeChar(hashPos, ';'))
+					continue;
+
+				int restLength = data + strlen(data) - hashPos;
+				//int restLength = strcspn(hashPos, "\n;");
+				char *restData = new char[restLength + 1];
+				strncpy(restData, hashPos, restLength);
+				restData[restLength] = '\0';
+				char *token = strtok(restData, " \t\n;");
+				token = strtok(nullptr, " \t\n;");
+				if (token == nullptr)
+				{
+					delete[] restData;
+					//lastPos += 9;
+				}
+
+				else
+				{
+					std::cout<<"define:" << token << std::endl;
+					char *target = new char[strlen(token) + 1];
+					strcpy(target, token);
+					target[strlen(token)] = '\0';
+
+					token = strtok(nullptr, " \t\n;");
+					if (token == nullptr)
+					{
+						delete[] restData;
+						delete[] target;
+					}
+
+					else
+					{
+						char *replacement = new char[strlen(token) + 1];
+						std::cout << "define repl:" << token << std::endl;
+						strcpy(replacement, token);
+						replacement[strlen(token)] = '\0';
+
+						int macroLength = token + strlen(replacement) - restData;
+
+						//std::cout << "define macrolen:" << macroLength << std::endl;
+						//system("pause");
+
+						delete[] restData;
+
+						bool replacedExistingMacro = false;
+						for (auto macro : vMacro)
+						{
+							if (strcmp(macro.first.c_str(), target) == 0)
+							{
+								macro.first = std::string(target);
+								replacedExistingMacro = true;
+								break;
+							}
+						}
+
+						if (!replacedExistingMacro)
+							vMacro.push_back(std::make_pair<std::string, std::string>(std::string(target), std::string(replacement)));
+				//any additional ptr ar goes here
+						lastPos = hashPos + macroLength;	//remove this
+
+						//macroMap.insert(std::make_pair<std::string, std::string>(std::string(target), std::string(replacement)));
+
+						delete[] replacement;
+						delete[] target;
+					}
+				}
+			}
+
+			else
+			{
+				MacroSubstitute(vMacro, definedData, lastPos, data + strlen(data));
+				std::cout << "in final sub part of def" << std::endl;
+
+				/*while (lastPos != data + strlen(data))
+				{
+					definedData.push_back(*lastPos);
+					++lastPos;
+				}*/
+
+				definedData.push_back('\0');
+				lastPos = nullptr;
+			}
+		}
+
+		return definedData;
 	}
 
 	GameflowScriptHeader *ScriptFile::SourceParse(const char *rawData)
@@ -1062,7 +1288,10 @@ ScriptFile::ScriptFile(const char *filename)
 		gameflow->numLevelPaths = 0;
 		gameflow->title = nullptr;
 
-		char *data = PreprocessorPass(rawData);
+		PreprocessorPass(rawData);
+		const char *data = preprocessedData.data();
+		//const char *data = PreprocessorPass(rawData);
+		std::cout << "preproc done" << std::endl << std::endl;
 
 		const char *ptr = data;
 		bool isPrimaryLanguageParsed = false;

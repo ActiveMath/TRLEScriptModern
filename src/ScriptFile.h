@@ -352,7 +352,6 @@ namespace TRLEScript
 		virtual ~ScriptFile();
 
 		virtual void CompileToDAT(const char *data) = 0;
-		//virtual void CompileToDAT(const char *data, int length) = 0;
 		virtual void Parse() = 0;
 		virtual const GameflowScriptHeader *GetGameflowScript() const = 0;
 
@@ -371,17 +370,22 @@ namespace TRLEScript
 		LanguageScript *primaryLanguage = nullptr;
 
 		virtual GameflowScriptHeader* SourceParse(const char *data);
-		virtual char *PreprocessorPass(const char *data);
+		virtual void PreprocessorPass(const char *data);
 		bool isLanguageScript;
 		bool isGameflowScript;
 		bool compilingToDAT;
-		char *filename = nullptr;	//new 13-7-15
+		char *filename = nullptr;
 
 	private:
 
 		bool InterpretLanguageStrings(int &stringIndex, char *token, GameflowScriptHeader *gameflow, ParseMode mode, int lineNumber);
 		void ClearArgumentStack();
-		//int GetCurrentLineNumber(const char *startPos, const char *currentPos) const;
+
+		std::vector<char> PreprocessorIncludePass(const char *);
+		std::vector<char> PreprocessorDefinePass(const char *);
+		//std::vector<char> PreprocessorIncludePass(std::vector<char>);
+	//	std::vector<char> PreprocessorDefinePass(std::vector<char>);
+		std::string EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vData, std::string &toReplace);
 
 		std::stack<char *> *ParseArguments(char *token);
 
@@ -395,6 +399,8 @@ namespace TRLEScript
 		void DefaultLevel(LevelData *level);
 
 		std::vector<char> preprocessedData;
+		static int MacroPointerCompare(const void *, const void*);
+		void MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos);
 
 		char *command = nullptr;
 		char *wholeLine = nullptr;	//new 13-7-15

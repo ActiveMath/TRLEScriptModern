@@ -90,7 +90,7 @@ ScriptFile::ScriptFile(const char *filename)
 	//arg = nullptr;
 }
 
-	char *ScriptFile::StripTrailingWhitespace(const char *string)
+	char *ScriptFile::StripTrailingLeadingWhitespace(const char *string)
 	{
 		const char *ptr = string;
 		const char *startPos;
@@ -114,7 +114,7 @@ ScriptFile::ScriptFile(const char *filename)
 		return out;
 	}
 
-	char *ScriptFile::StripTrailingChar(const char *string, char c)
+	char *ScriptFile::StripTrailingLeadingChar(const char *string, char c)
 	{
 		const char *ptr = string;
 		const char *startPos;
@@ -158,7 +158,8 @@ ScriptFile::ScriptFile(const char *filename)
 
 	char *ScriptFile::ParseLanguageString(const char *token)
 	{
-		const char *ptr2 = strpbrk(token, ":");
+		const char *ptr2 = strchr(token, ':');
+		//const char *ptr2 = strpbrk(token, ":");
 		const char *ptr1 = ptr2 + 1;
 		if (ptr2 == nullptr)
 			ptr1 = token;
@@ -172,7 +173,7 @@ ScriptFile::ScriptFile(const char *filename)
 
 	char *ScriptFile::ParseString(const char *token)
 	{
-		return StripTrailingWhitespace(token);
+		return StripTrailingLeadingWhitespace(token);
 	}
 
 	long int ScriptFile::ParseNumber(const char *token)
@@ -998,7 +999,8 @@ ScriptFile::ScriptFile(const char *filename)
 				strncpy(restData, hashPos, restLength);
 				restData[restLength] = '\0';
 				char *filename = strtok(restData, " \t\n;");
-				filename = strtok(nullptr, " \t\n;");
+				filename = strtok(nullptr, "\n;");
+				//filename = strtok(nullptr, " \t\n;");
 				if (filename == nullptr)
 				{
 					delete[] restData;
@@ -1007,8 +1009,10 @@ ScriptFile::ScriptFile(const char *filename)
 
 				else
 				{
+					char *filenameNoSpaces = StripTrailingLeadingWhitespace(filename);
 					int macroLength = filename + strlen(filename) - restData;
-					char *realFilename = StripTrailingChar(filename, '\"');
+					char *realFilename = StripTrailingLeadingChar(filenameNoSpaces, '\"');
+					//char *realFilename = StripTrailingChar(filename, '\"');
 					delete[] restData;
 
 					std::fstream includeFile(realFilename);
@@ -1033,6 +1037,7 @@ ScriptFile::ScriptFile(const char *filename)
 
 						includeFile.close();
 						delete[] realFilename;
+						delete[] filenameNoSpaces;
 						delete[] buffer;
 						lastPos = hashPos + macroLength - 1;
 					}
@@ -1040,6 +1045,7 @@ ScriptFile::ScriptFile(const char *filename)
 					else
 					{
 						AddNewWarning("Could not open '" + std::string(realFilename) + "' as part of an #include directive");
+						delete[] filenameNoSpaces;
 						delete[] realFilename;
 						//lastPos += 9;;
 					}
@@ -1489,7 +1495,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 
@@ -1512,7 +1518,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 
 							delete[] argStack->top();
 							argStack->pop();
@@ -1592,7 +1598,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 							definitions->PSXCut = cleanArg;
@@ -1615,7 +1621,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 							definitions->PCCut = cleanArg;
@@ -1673,7 +1679,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 							definitions->PSXFmv = cleanArg;
@@ -1696,7 +1702,7 @@ ScriptFile::ScriptFile(const char *filename)
 								return nullptr;
 							}
 
-							char *cleanArg = StripTrailingWhitespace(argStack->top());
+							char *cleanArg = StripTrailingLeadingWhitespace(argStack->top());
 							delete[] argStack->top();
 							argStack->pop();
 							definitions->PCFmv = cleanArg;

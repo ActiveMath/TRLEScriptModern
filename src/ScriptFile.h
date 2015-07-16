@@ -389,8 +389,8 @@ namespace TRLEScript
 
 		std::stack<char *> *ParseArguments(char *token);
 
-		char *StripTrailingWhitespace(const char *string);
-		char *StripTrailingChar(const char *string, char c);
+		char *StripTrailingLeadingWhitespace(const char *string);
+		char *StripTrailingLeadingChar(const char *string, char c);
 		char *ParseLanguageString(const char *token);
 		char *ParseString(const char *token);
 		long int ParseNumber(const char *token);

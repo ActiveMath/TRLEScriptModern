@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-	const char *programVersion = "v1.0";
+	const char *programVersion = "v1.1.0";
 	const char *programName = "Tomb Raider Level Editor Script Compiler - Modern Edition";
 
 	if (argc == 1)

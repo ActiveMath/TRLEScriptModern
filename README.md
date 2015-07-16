@@ -53,6 +53,8 @@ E.g. If the string *Task: Pick up the small medipack* must be used as a legend s
 
 ## 4. New features
 * Batch processing. The user can now provide multiple input files for the tool to compile to corresponding output script files.
+* `#include` directive support; see [this](https://github.com/ActiveMath/TRLEScriptModern/releases/tag/v1.1.0) release for more information
+* `#define` macro support; see [this](https://github.com/ActiveMath/TRLEScriptModern/releases/tag/v1.1.0) release for more information.
 
 ## 5. Syntax
 The syntax used for TRLE scripts is fairly simple. The compiler is *not* case-sensitive, except of course for the user-defined language strings which must be written exactly as they appear in the corresponding primary language script file (the one with the index 0 in the Language chunk).

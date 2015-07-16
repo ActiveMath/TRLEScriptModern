@@ -330,3 +330,18 @@ int StringHelper::GetCurrentLineNumber(const char *startPos, const char *current
 
 	return lineNumber + 1;
 }
+
+bool StringHelper::PreviousLineCharsIncludeChar(const char *str, char c)
+{
+	const char *ptr = str;
+
+	while (*ptr != '\n')
+	{
+		if (*ptr == c)
+			return true;
+
+		ptr--;
+	}
+
+	return false;
+}

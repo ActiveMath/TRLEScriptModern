@@ -15,6 +15,7 @@ public:
 	static char *ExtractFilenameWithoutExtension(const char *filename);
 	static char *ReplaceThreeLetterExtension(char *filename, const char *newExtension);
 	static int GetCurrentLineNumber(const char *startPos, const char *currentPos);
+	static bool PreviousLineCharsIncludeChar(const char *str, char c);
 };
 
 

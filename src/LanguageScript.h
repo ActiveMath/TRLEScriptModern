@@ -9,8 +9,6 @@
 
 namespace TRLEScript
 {
-    //struct LanguageString;
-
 	struct GameStrings
 	{
 		std::forward_list<LanguageString *> *Strings = nullptr;
@@ -28,8 +26,7 @@ namespace TRLEScript
 	{
 	public:
 		LanguageScript(const char *filename);
-		virtual ~LanguageScript();			//new 12-7-15
-		//~LanguageScript();
+		virtual ~LanguageScript();
 
 		LanguageScript(const LanguageScript &a);
 		LanguageScript & operator= (const LanguageScript &a);
@@ -39,19 +36,16 @@ namespace TRLEScript
 
 		
 		void CompileToDAT(const char *data) override;
-		//void CompileToDAT(const char *data, int length);
 		void Parse() override;
 		const char *GetLanguageName() const;
 
 		int GetStringIndex(const char *str);
-		//uint16_t GetStringIndex(const char *str);// const;
 		GameflowScriptHeader *GetGameflowScript() const;
 		GameStrings *GetGameStrings() const;
 
 	protected:
 		GameStrings *gameStrings;
 		const char *langName;
-		//char *langName;
 
 	private:
 		uint16_t GetTotalLength(std::forward_list<LanguageString *> *strings) const;

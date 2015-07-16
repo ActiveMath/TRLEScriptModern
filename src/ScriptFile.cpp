@@ -1080,7 +1080,8 @@ ScriptFile::ScriptFile(const char *filename)
 			return -1;
 	}
 
-	std::string ScriptFile::EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vMacro, std::string &toReplace)
+	std::string ScriptFile::EvaluateMacro(std::unordered_map<std::string, std::string> &vMacro, const std::string const &toReplace)
+		//std::string ScriptFile::EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vMacro, std::string &toReplace)
 	{
 		for (auto macro : vMacro)
 		{
@@ -1091,31 +1092,38 @@ ScriptFile::ScriptFile(const char *filename)
 		return toReplace;
 	}
 
-	void ScriptFile::MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos)
+	void ScriptFile::MacroSubstitute(std::unordered_map<std::string,std::string> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos)
+	//	void ScriptFile::MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos)
 	{
 
 		while (lastPos != endPos)
 		{
 			bool needsPush = true;
-			for (int i = 0; i < vMacro.size(); ++i)
+			for (auto macro : vMacro)
+				//for (int i = 0; i < vMacro.size(); ++i)
 			{
-				const char *replacementStartPos = strstr(lastPos, vMacro[i].first.c_str());
+				//const char *replacementStartPos = strstr(lastPos, vMacro[i].first.c_str());
 				const char *initialPos = lastPos;
-				if (strstr(lastPos, vMacro[i].first.c_str()) == lastPos)
+				if (strstr(lastPos, macro.first.c_str())==lastPos)
+				//if (strstr(lastPos, vMacro[i].first.c_str()) == lastPos)
 				{
 					std::string replaced;
-					if (vMacro[i].second == vMacro[i].first)
-						replaced = vMacro[i].first;
+					if (macro.second == macro.first)
+						replaced = macro.first;
+					//if (vMacro[i].second == vMacro[i].first)
+					//replaced = vMacro[i].first;
 					else
 
-						replaced = EvaluateMacro(vMacro, vMacro[i].first);
+						replaced = EvaluateMacro(vMacro, macro.first);
+						//replaced = EvaluateMacro(vMacro, vMacro[i].first);
 
 					for (int j = 0; j < replaced.size(); ++j)
 					{
 						definedData.push_back(replaced[j]);
 					}
 
-					lastPos += vMacro[i].first.size();
+					lastPos += macro.first.size();
+					//lastPos += vMacro[i].first.size();
 					needsPush = false;
 					break;
 				}
@@ -1133,7 +1141,8 @@ ScriptFile::ScriptFile(const char *filename)
 	{
 		std::vector<char> definedData;
 
-		std::vector < std::pair<std::string, std::string> > vMacro;
+		std::unordered_map<std::string, std::string> vMacro;
+		//std::vector < std::pair<std::string, std::string> > vMacro;
 		const char *lastPos = data;
 		while (lastPos != nullptr)
 		{
@@ -1195,8 +1204,11 @@ ScriptFile::ScriptFile(const char *filename)
 						int macroLength = token + strlen(replacement) - restData;
 						delete[] restData;
 
-						bool replacedExistingMacro = false;
-						for (int i = 0; i < vMacro.size(); ++i)
+						//bool replacedExistingMacro = false;
+						auto it = vMacro.find(std::string(target));
+						if (it != vMacro.end())
+							vMacro.erase(it);
+						/*for (int i = 0; i < vMacro.size(); ++i)
 						{
 							if (strcmp(vMacro[i].first.c_str(), target) == 0)
 							{
@@ -1205,10 +1217,11 @@ ScriptFile::ScriptFile(const char *filename)
 								replacedExistingMacro = true;
 								break;
 							}
-						}
+						}*/
 
-						if (!replacedExistingMacro)
-							vMacro.push_back(std::make_pair<std::string, std::string>(std::string(target), std::string(replacement)));
+						vMacro.insert(std::make_pair(std::string(target), std::string(replacement)));
+						//if (!replacedExistingMacro)
+						//vMacro.push_back(std::make_pair<std::string, std::string>(std::string(target), std::string(replacement)));
 						lastPos = hashPos + macroLength;
 
 						delete[] replacement;

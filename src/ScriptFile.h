@@ -385,7 +385,9 @@ namespace TRLEScript
 		std::vector<char> PreprocessorDefinePass(const char *);
 		//std::vector<char> PreprocessorIncludePass(std::vector<char>);
 	//	std::vector<char> PreprocessorDefinePass(std::vector<char>);
-		std::string EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vData, std::string &toReplace);
+
+		std::string EvaluateMacro(std::unordered_map<std::string, std::string> &vData, const std::string const &toReplace);
+		//std::string EvaluateMacro(std::vector<std::pair<std::string, std::string>> &vData, std::string &toReplace);
 
 		std::stack<char *> *ParseArguments(char *token);
 
@@ -400,7 +402,8 @@ namespace TRLEScript
 
 		std::vector<char> preprocessedData;
 		static int MacroPointerCompare(const void *, const void*);
-		void MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos);
+		void MacroSubstitute(std::unordered_map<std::string, std::string> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos);
+		//void MacroSubstitute(std::vector<std::pair<std::string, std::string>> &vMacro, std::vector<char> &definedData, const char *& lastPos, const char *endPos);
 
 		char *command = nullptr;
 		char *wholeLine = nullptr;	//new 13-7-15

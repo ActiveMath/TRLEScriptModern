@@ -656,7 +656,7 @@ using namespace TRLEScript;
 					for (Key *key : *level->keys)
 					{
 						if (key->index == 1)
-							fputc(key10Opcode, output);
+							fputc(key1Opcode, output);
 						else if (key->index == 2)
 							fputc(key2Opcode, output);
 						else if (key->index == 3)
